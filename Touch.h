@@ -73,15 +73,54 @@ private:
 
 class Panel {
 public:
-	Panel(Touch &touch): touch(touch) {}
+	Panel(Touch &touch, int width, int height): touch(touch), width(width), height(height) {}
 
 	bool getPos(int &X, int &Y) {
-		int pressure;
-		touch.read(X, Y, pressure);
+		int RX, RY, pressure;
+		return getPosRaw(X, Y, RX, RY, pressure);
+	}
 
-		return pressure;
+	bool getPosRaw(int &X, int &Y, int &RX, int &RY, int &pressure) {
+		touch.read(RX, RY, pressure);
+
+		X = map(RX, width, minX, maxX);
+		if(reverseX) {
+		    X = width - X;
+		}
+
+		Y = map(RY, height, minY, maxY);
+		if(reverseY) {
+		    Y = height - Y;
+		}
+
+		return pressure < thresholdPressure;
+	}
+
+	void setPressureThreshold(int pressure) {
+		thresholdPressure = pressure;
+	}
+
+	void calibrateX(int min, int max, bool reverse) {
+		minX = min;
+		maxX = max;
+		reverseX = reverse;
+	}
+
+	void calibrateY(int min, int max, bool reverse) {
+		minY = min;
+		maxY = max;
+		reverseY = reverse;
 	}
 
 private:
 	Touch &touch;
+	int thresholdPressure;
+	int minX, maxX;
+	int minY, maxY;
+	bool reverseX, reverseY;
+	int width, height;
+
+	int map(int val, int size, int begin, int end) {
+		return std::max(std::min((val - begin) * size / (end - begin), size), 0);
+	}
 };

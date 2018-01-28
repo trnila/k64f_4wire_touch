@@ -1,87 +1,121 @@
+import argparse
+
 from serial import Serial
 from turtle import Turtle, setworldcoordinates
 
 MAX = 65535
+RESOLUTION_X = 180
+RESOLUTION_Y = 230
 
-t = Turtle()
+
+def setup_turtle():
+    t = Turtle()
+    setworldcoordinates(-1, -1, RESOLUTION_X, RESOLUTION_Y)
+    t.speed(0)
+    return t
+
 
 class Touch:
-	def __init__(self):
-		self.s = Serial('/dev/ttyACM0', 115200)
+    def __init__(self):
+        self.s = Serial('/dev/ttyACM0', 115200)
 
-	def get_touch(self):
-		while True:
-			try:
-				evt = [int(i.split('=', 2)[1].strip()) for i in self.s.readline().decode('utf-8').split(' ') if len(i) >= 3]
+    def get_touch(self):
+        while True:
+            try:
+                # parse line to dict and check that all keys are available, otherwise try another line
+                def pair(p):
+                    return p[0], int(p[1])
 
-				if len(evt) == 3 and evt[2] < 100000:
-					return evt
-			except Exception as e:
-				print(e)
-				pass
+                result = dict([pair(i.split('=', 2)) for i in self.s.readline().decode('utf-8').strip().split(' ')])
+                if all([k in result for k in ['X', 'Y', 'RX', 'RY', 'pressure', 'pressed']]):
+                    return result
+            except Exception as e:
+                print(e)
+
 
 class Calibrator:
-	def run(self, touch):
-		minX = MAX
-		maxX = 0
-		minY = MAX
-		maxY = 0
+    def run(self, touch):
+        minX = MAX
+        maxX = 0
+        minY = MAX
+        maxY = 0
 
-		while True:
-			X, Y, pressure = touch.get_touch()
+        while True:
+            evt = touch.get_touch()
+            X = evt['RX']
+            Y = evt['RY']
 
-			if X < minX:
-				minX = X
-			if X > maxX:
-				maxX = X
+            if X < minX:
+                minX = X
+            if X > maxX:
+                maxX = X
 
-			if Y < minY:
-				minY = Y
-			if Y > maxY:
-				maxY = Y
+            if Y < minY:
+                minY = Y
+            if Y > maxY:
+                maxY = Y
 
-			print("int minX = {}, maxX = {};".format(minX, maxX))
-			print("int minY = {}, maxY = {};".format(minY, maxY))
-			print("")
+            print("int minX = {}, maxX = {};".format(minX, maxX))
+            print("int minY = {}, maxY = {};".format(minY, maxY))
+            print("pressure {}".format(evt['pressure']))
+            print("")
+
 
 class Render:
-	def run(self, touch):
-		RESOLUTION_X = 180
-		RESOLUTION_Y = 230
-		MAX = 65535
+    def run(self, touch):
+        t = setup_turtle()
 
-		setworldcoordinates(-1, -1, RESOLUTION_X, RESOLUTION_Y)
-		t.speed(0)
+        minX = 15078
+        maxX = 36855
+        minY = 18613
+        maxY = 51230
 
-		minX = 15078; maxX = 36855;
-		minY = 18613; maxY = 51230;
+        def m(val, fa, fb, res):
+            if val > fb:
+                val = fb
 
+            val -= fa
 
-		def m(val, fa, fb, res):
-			if val > fb:
-				val = fb
+            if val < 0:
+                val = 0
 
-			val -= fa
+            return val / (fb - fa) * res
 
-			if val < 0:
-				val = 0
+        while True:
+            evt = touch.get_touch()
 
-			return val / (fb - fa) * res
+            x = RESOLUTION_X - m(evt['RX'], minX, maxX, RESOLUTION_X)
+            y = RESOLUTION_Y - m(evt['RY'], minY, maxY, RESOLUTION_Y)
 
-		while True:
-			X, Y, pressure = touch.get_touch()
-			if pressure > 100000:
-        			continue
-
-
-			x = RESOLUTION_X - m(X, minX, maxX, RESOLUTION_X)
-			y = RESOLUTION_Y - m(Y, minY, maxY, RESOLUTION_Y)
-
-			t.pendown()
-			t.goto(x, y)
-			print(X, Y, x, y, pressure)
+            t.pendown()
+            t.goto(x, y)
+            print(evt)
 
 
+class DirectRender:
+    def run(self, touch):
+        t = setup_turtle()
+        t.pendown()
+
+        while True:
+            evt = touch.get_touch()
+            if evt['pressed']:
+                t.goto(evt['X'], evt['Y'])
+                print(evt)
+
+
+modes = {
+    'calibrate': Calibrator,
+    'render': Render,
+    'direct_render': DirectRender
+}
+
+parser = argparse.ArgumentParser()
+parser.add_argument('mode', choices=modes.keys())
+
+args = parser.parse_args()
+
+
+mode = modes[args.mode]()
 touch = Touch()
-#Calibrator().run(touch)
-Render().run(touch)
+mode.run(touch)

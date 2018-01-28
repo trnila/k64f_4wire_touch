@@ -1,4 +1,9 @@
 #pragma once
+#include "mbed.h"
+#include <algorithm>
+
+#define MEASURES 16
+
 
 class Touch {
 public:
@@ -18,6 +23,23 @@ private:
 	PinName pinXP, pinXM;
 	PinName pinYP, pinYM;
 
+	uint16_t measure(AnalogIn in) {
+		uint16_t measures[MEASURES];
+
+		for(int i = 0; i < MEASURES; i++) {
+			measures[i] = in.read_u16();
+		}
+
+		std::sort(measures, measures + MEASURES);
+
+		int sum = 0;
+		for(int i = MEASURES / 4; i < 3 * MEASURES / 4; i++) {
+			sum += measures[i];
+		}
+
+		return sum / (MEASURES / 2);
+	}
+
 	int readY() {
 		DigitalOut xp(pinXP), xm(pinXM);
 		AnalogIn yp(pinYP), ym(pinYM);
@@ -25,7 +47,7 @@ private:
 		xp = true;
 		xm = false;
 
-		return ym.read_u16();
+		return measure(ym);
 	}
 
 	int readX() {
@@ -35,7 +57,7 @@ private:
 		yp = true;
 		ym = false;
 
-		return xm.read_u16();
+		return measure(xm);
 	}
 
 	int readPressure() {

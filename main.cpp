@@ -9,7 +9,7 @@ const PinName PIN_XP = A3;
 
 Serial pc(USBTX, USBRX);
 Touch touch(PIN_XP, PIN_XM, PIN_YP, PIN_YM);
-Panel panel(touch, 180, 230);
+Panel panel(touch);
 
 PwmOut servoX(PTC10), servoY(PTC11);
 
@@ -20,8 +20,8 @@ const int PX = 30, PY = 30;
 const int DUTY_MS = 20;
 const int CENTER_X_US = 1600;
 const int CENTER_Y_US = 1500;
-const double SHIFT_MIN = -0.012;
-const double SHIFT_MAX = 0.012;
+const double SHIFT_MIN = -0.012; //- 250
+const double SHIFT_MAX = 0.012; // 250
 
 #define us2dc(t, us) ((double) (us) / ((t)*1000))
 
@@ -39,12 +39,23 @@ int main() {
 	MotionSensorDataUnits acc_data;
 	acc.enable();
 
+	panel.setPressureThreshold(100000);
+	panel.calibrateX(12200, 40700, true);
+	panel.calibrateY(8600, 48900, true);
+
+
 	for(;;) {
 		acc.getAxis(acc_data);
 		double normalized = sqrt(acc_data.x * acc_data.x + acc_data.y * acc_data.y + acc_data.z * acc_data.z);
 
-		double x = acc_data.x / normalized;
-		double y = acc_data.y / normalized;
+		//double x = acc_data.x / normalized;
+		//double y = acc_data.y / normalized;
+		double x, y;
+		if(!panel.getPos(x, y)) {
+			servoX.write(0);
+			servoY.write(0);
+			continue;
+		}
 		double z = acc_data.z / normalized;
 
 		double zx = -x * MX / z;
@@ -65,15 +76,14 @@ int main() {
 		wait(0.05f);
 	}
 
-	panel.setPressureThreshold(100000);
-	panel.calibrateX(12200, 40700, true);
-	panel.calibrateY(8600, 48900, true);
 
-	int X, Y, RX, RY, pressure;
+
+	int RX, RY, pressure;
+	double X, Y;
 	bool pressed;
 	while (true) {
 		pressed = panel.getPosRaw(X, Y, RX, RY, pressure);
-		pc.printf("X=%d Y=%d RX=%d RY=%d pressure=%d pressed=%d\r\n", X, Y, RX, RY, pressure, pressed);
+		pc.printf("X=%1.4f Y=%1.4f RX=%d RY=%d pressure=%d pressed=%d\r\n", X, Y, RX, RY, pressure, pressed);
 		wait(0.05f);
 	}
 }

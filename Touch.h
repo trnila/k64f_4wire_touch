@@ -71,9 +71,9 @@ private:
 	}
 };
 
-class Panel {
+class TouchPanel {
 public:
-	Panel(Touch &touch): touch(touch) {}
+	TouchPanel(Touch &touch): touch(touch) {}
 
 	bool getPos(double &X, double &Y) {
 		int RX, RY, pressure;

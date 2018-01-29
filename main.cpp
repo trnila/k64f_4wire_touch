@@ -23,8 +23,9 @@ int main() {
 	servoY.period(DUTY_MS / 1000.0);
 
 	panel.setPressureThreshold(100000);
-	panel.calibrateX(12200, 40700, true);
-	panel.calibrateY(8600, 48900, true);
+	panel.calibrateX(12200, 40700, false);
+	panel.calibrateY(8600, 48900, false);
+	panel.setSwapXY(true);
 
 
 #if INPUT_METHOD == INPUT_METHOD_TOUCH

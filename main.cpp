@@ -22,6 +22,12 @@ int main() {
 	servoX.period(DUTY_MS / 1000.0);
 	servoY.period(DUTY_MS / 1000.0);
 
+#ifdef FUNCTION_CENTER
+	servoX.write(us2dc(DUTY_MS, CENTER_X_US));
+	servoY.write(us2dc(DUTY_MS, CENTER_Y_US));
+	for(;;);
+#endif
+
 	panel.setPressureThreshold(100000);
 	panel.calibrateX(12200, 40700, false);
 	panel.calibrateY(8600, 48900, false);

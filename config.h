@@ -4,7 +4,7 @@
 #define INPUT_METHOD_ACCELEROMETER 1
 
 // configurable
-#define INPUT_METHOD INPUT_METHOD_ACCELEROMETER
+#define INPUT_METHOD INPUT_METHOD_TOUCH
 
 const PinName PIN_YM = A0;
 const PinName PIN_XM = A1;

@@ -4,6 +4,11 @@
 
 #define MEASURES 16
 
+template<typename T>
+struct Vector {
+	T x;
+	T y;
+};
 
 class Touch {
 public:
@@ -16,7 +21,8 @@ public:
 	void read(int &X, int &Y, int &pressure) {
 		Y = readY();
 		X = readX();
-		pressure = readPressure();
+		pressure = 90000;
+		//pressure = readPressure();
 	}
 
 private:
@@ -41,23 +47,43 @@ private:
 	}
 
 	int readY() {
-		DigitalOut xp(pinXP), xm(pinXM);
-		AnalogIn yp(pinYP), ym(pinYM);
+		int value;
+		{
+			DigitalOut xp(pinXP), xm(pinXM);
+			AnalogIn yp(pinYP), ym(pinYM);
 
-		xp = true;
-		xm = false;
+			xp = true;
+			xm = false;
 
-		return measure(ym);
+			value = measure(ym);
+		}
+
+		{
+			DigitalIn xp(pinXP), xm(pinXM);
+			wait_us(100);
+		}
+
+		return value;
 	}
 
 	int readX() {
-		DigitalOut yp(pinYP), ym(pinYM);
-		AnalogIn xp(pinXP), xm(pinXM);
+		int value;
+		{
+			DigitalOut yp(pinYP), ym(pinYM);
+			AnalogIn xp(pinXP), xm(pinXM);
 
-		yp = true;
-		ym = false;
+			yp = true;
+			ym = false;
 
-		return measure(xm);
+			value = measure(xm);
+		}
+
+		{
+			DigitalIn yp(pinYP), ym(pinYM);
+			wait_us(100);
+		}
+
+		return value;
 	}
 
 	int readPressure() {
@@ -71,6 +97,23 @@ private:
 	}
 };
 
+bool xComparator(const Vector<int> &a, const Vector<int> &b) {
+	return a.x < b.x;
+}
+
+bool comparator(const Vector<int> &a, const Vector<int> &b) {
+	if(a.x < b.x) {
+		return true;
+	}
+
+	if(a.x == b.x) {
+		return a.y < b.y;
+	}
+
+	return false;
+}
+
+const int lastCount = 20;
 class TouchPanel {
 public:
 	TouchPanel(Touch &touch):
@@ -86,6 +129,20 @@ public:
 
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
 		touch.read(RX, RY, pressure);
+		lastValues[lastPos].x = RX;
+		lastValues[lastPos].y = RY;
+		lastPos = (lastPos + 1) % lastCount;
+
+		std::stable_sort(lastValues, lastValues + lastCount, comparator);
+
+		RX = 0;
+		RY = 0;
+		for(int i = lastCount / 4; i < 3 * lastCount / 4; i++) {
+			RX += lastValues[i].x;
+			RY += lastValues[i].y;
+		}
+		RX /= lastCount / 2;
+		RY /= lastCount / 2;
 
 		X = map(RX, minX, maxX);
 		if(reverseX) {
@@ -101,6 +158,7 @@ public:
 			std::swap(X, Y);
 		}
 
+		return true;
 		return pressure < thresholdPressure;
 	}
 
@@ -131,6 +189,9 @@ private:
 	int minY, maxY;
 	bool reverseX, reverseY;
 	bool swapXY;
+
+	int lastPos = 0;
+	Vector<int> lastValues[lastCount];
 
 	double map(int val, int min, int max) {
 		return ((double) val - min) / (max - min) * 2 - 1;

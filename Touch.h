@@ -49,17 +49,16 @@ private:
 	int readY() {
 		int value;
 		{
-			DigitalOut xp(pinXP), xm(pinXM);
+			DigitalOut xp(pinXP, true), xm(pinXM, false);
 			AnalogIn yp(pinYP), ym(pinYM);
-
-			xp = true;
-			xm = false;
+			wait_us(100);
 
 			value = measure(ym);
 		}
 
 		{
-			DigitalIn xp(pinXP), xm(pinXM);
+			DigitalOut xp(pinXP), xm(pinXM);
+			xp = xm = 1;
 			wait_us(100);
 		}
 
@@ -69,17 +68,16 @@ private:
 	int readX() {
 		int value;
 		{
-			DigitalOut yp(pinYP), ym(pinYM);
+			DigitalOut yp(pinYP, true), ym(pinYM, false);
 			AnalogIn xp(pinXP), xm(pinXM);
-
-			yp = true;
-			ym = false;
+			wait_us(100);
 
 			value = measure(xm);
 		}
 
 		{
-			DigitalIn yp(pinYP), ym(pinYM);
+			DigitalOut yp(pinYP), ym(pinYM);
+			yp = ym = 1;
 			wait_us(100);
 		}
 

@@ -12,17 +12,37 @@ Touch touch(PIN_XP, PIN_XM, PIN_YP, PIN_YM);
 TouchPanel panel(touch);
 PwmOut servoX(PIN_SERVOX), servoY(PIN_SERVOY);
 InterruptIn centerBtn(SW2);
+InterruptIn rectBtn(SW3);
+
+bool demo = false;
 
 DigitalOut led1(LED1);
 
-typedef struct {
+struct Point {
 	float x;
 	float y;
-} Point;
+	Point(float x, float y): x(x), y(y) {}
+	Point(): Point(0, 0) {}
+};
 
 const int pointCount = 10;
 int lastPoint = 0;
 Point lastPoints[pointCount];
+
+double lastX = 0, lastY = 0;
+Point dir;
+int i = 0;
+
+Point positions[] = {
+		Point(1, 1),
+		Point(-1, 1),
+		Point(-1, -1),
+		Point(1, -1)
+};
+int currentPosition = 0;
+
+//Samples<Point, comparator> points;
+
 
 #if INPUT_METHOD == INPUT_METHOD_TOUCH
 	TouchPanel &input = panel;
@@ -44,24 +64,27 @@ double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
 }
 
-double lastX = 0, lastY = 0;
-Point dir;
-int i = 0;
-
-//Samples<Point, comparator> points;
-
 void control() {
 	double x, y, z = 1;
 
-	if(!input.getPos(x, y)) {
-		led1 = false;
-		return;
-	}
-	led1 = true;
+	if(!demo) {
+		if(!input.getPos(x, y)) {
+			led1 = false;
+			return;
+		}
+		led1 = true;
+	} else {
+		x = positions[currentPosition].x;
+		y = positions[currentPosition].y;
 
-	dir.x -= lastX - x;
-	dir.y -= lastY - y;
-	dir = normalize(dir);
+		if(i % 50 == 0) {
+			currentPosition = (currentPosition + 1) % (sizeof(positions) / sizeof(*positions));
+		}
+	}
+
+	//dir.x -= lastX - x;
+	//dir.y -= lastY - y;
+	//dir = normalize(dir);
 
 
 	//lastPoints[lastPoint].x = x;
@@ -96,6 +119,12 @@ void control() {
 void center() {
 	servoX.write(us2dc(DUTY_MS, CENTER_X_US));
 	servoY.write(us2dc(DUTY_MS, CENTER_Y_US));
+	demo = false;
+}
+
+void rect() {
+	demo = true;
+	currentPosition = 0;
 }
 
 int main() {
@@ -105,6 +134,7 @@ int main() {
 	pc.printf("Hello World!\r\n");
 
 	centerBtn.fall(&center);
+	rectBtn.fall(&rect);
 
 	servoX.period(DUTY_MS / 1000.0);
 	servoY.period(DUTY_MS / 1000.0);

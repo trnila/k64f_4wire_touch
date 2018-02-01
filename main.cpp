@@ -11,6 +11,7 @@ Serial pc(USBTX, USBRX);
 Touch touch(PIN_XP, PIN_XM, PIN_YP, PIN_YM);
 TouchPanel panel(touch);
 PwmOut servoX(PIN_SERVOX), servoY(PIN_SERVOY);
+InterruptIn centerBtn(SW2);
 
 DigitalOut led1(LED1);
 
@@ -43,23 +44,36 @@ double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
 }
 
+double lastX = 0, lastY = 0;
+Point dir;
+int i = 0;
+
+//Samples<Point, comparator> points;
+
 void control() {
 	double x, y, z = 1;
 
 	if(!input.getPos(x, y)) {
 		led1 = false;
-		servoX.write(0);
-		servoY.write(0);
+		//servoX.write(0);
+		//servoY.write(0);
 		return;
 	}
 	led1 = true;
 
-	lastPoints[lastPoint].x = x;
-	lastPoints[lastPoint].y = y;
-	lastPoint = lastPoint % pointCount;
+	dir.x -= lastX - x;
+	dir.y -= lastY - y;
+	dir = normalize(dir);
+
+
+	//lastPoints[lastPoint].x = x;
+	//lastPoints[lastPoint].y = y;
+	//lastPoint = lastPoint % pointCount;
 
 	double zx = -x * MX / z;
 	double zy = -y * MY / z;
+	//double zx = -dir.x * MX / z;
+	//double zy = -dir.y * MY / z;
 
 	double angleX = zx / MX;
 	double angleY = zy / MY;
@@ -70,11 +84,21 @@ void control() {
 	double USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
 	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
-	printf("FXOS8700Q ACC: X=%1.4f Y=%1.4f Z=%1.4f DX=%f DY=%f\r\n", x, y, z, USX, USY);
-	servoX.write(USX);
-	servoY.write(USY);
+	if(i % 4 == 0) {
+		printf("FXOS8700Q ACC: X=%1.4f Y=%1.4f Z=%1.4f DX=%f DY=%f dir(%1.4f, %1.4f)\r\n", x, y, z, USX, USY, dir.x, dir.y);
+		servoX.write(USX);
+		servoY.write(USY);
+	}
+	i++;
+
+	lastX = x;
+	lastY = y;
 }
 
+void center() {
+	servoX.write(us2dc(DUTY_MS, CENTER_X_US));
+	servoY.write(us2dc(DUTY_MS, CENTER_Y_US));
+}
 
 int main() {
  	led1 = true;
@@ -82,12 +106,13 @@ int main() {
 	pc.baud(115200);
 	pc.printf("Hello World!\r\n");
 
+	centerBtn.fall(&center);
+
 	servoX.period(DUTY_MS / 1000.0);
 	servoY.period(DUTY_MS / 1000.0);
 
 #ifdef FUNCTION_CENTER
-	servoX.write(us2dc(DUTY_MS, CENTER_X_US));
-	servoY.write(us2dc(DUTY_MS, CENTER_Y_US));
+	center();
 	for(;;);
 #endif
 

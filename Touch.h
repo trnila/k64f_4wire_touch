@@ -2,7 +2,7 @@
 #include "mbed.h"
 #include <algorithm>
 
-#define MEASURES 16
+#define MEASURES 30
 
 class Touch {
 public:

@@ -35,9 +35,19 @@ public:
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
 		int rx, ry;
 		touch.read(rx, ry, pressure);
-		if(pressure > 120000 || rx>65000 || ry>65000) {
+		if(pressure > 120000 || rx > 65000 || ry > 65000) {
 			return false;
 		}
+
+		lastValues[lastPos].x = rx;
+		lastValues[lastPos].y = ry;
+		lastPos = (lastPos + 1) % lastCount;
+
+		Vector<int> &median = lastValues[lastCount / 2];
+		if(abs(rx - median.x) > 4000 || abs(ry - median.y) > 4000) {
+			return false;
+		}
+
 
 		RX = rx;
 		RY = ry;

@@ -1,6 +1,6 @@
 #pragma once
 
-template<typename T>
+template<typename T, comparator>
 class Samples {
 public:
 	Samples(int size): size(size), count(0), last(0) {
@@ -9,6 +9,10 @@ public:
 
 	void add(T sample) {
 		samples[last++] = sample;
+	}
+
+	T median() {
+		std::sort(samples, samples + size, comparator);
 	}
 
 	~Samples() {

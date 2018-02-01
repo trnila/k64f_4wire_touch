@@ -89,6 +89,10 @@ class Render:
 
             return val / (fb - fa) * res
 
+        lastX = 0
+        lastY = 0
+        lastP = 0
+
         while True:
             evt = touch.get_touch()
 
@@ -97,7 +101,15 @@ class Render:
 
             t.pendown()
             t.goto(x, y)
-            print(evt)
+            print("{} {} {}, {} {} {}".format(
+                evt['RX'], evt['RY'], evt['pressure'],
+                evt['RX'] - lastX, evt['RY'] - lastY, evt['pressure'] - lastP,
+
+            ))
+
+            lastX = evt['RX']
+            lastY = evt['RY']
+            lastP = evt['pressure']
 
 
 class DirectRender:

@@ -18,7 +18,9 @@ bool comparator(const Vector<int> &a, const Vector<int> &b) {
 	return false;
 }
 
-const int lastCount = 10;
+const int lastCount = 20;
+int lastPos = 0;
+Vector<int> lastValuesSorted[lastCount];
 class TouchPanel {
 public:
 	TouchPanel(Touch &touch):
@@ -35,16 +37,25 @@ public:
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
 		int rx, ry;
 		touch.read(rx, ry, pressure);
-		if(pressure > 120000 || rx > 65000 || ry > 65000) {
-			return false;
-		}
+		//if(pressure > 120000 || rx > 65000 || ry > 65000) {
+		//	return false;
+		//}
 
 		lastValues[lastPos].x = rx;
 		lastValues[lastPos].y = ry;
 		lastPos = (lastPos + 1) % lastCount;
 
-		Vector<int> &median = lastValues[lastCount / 2];
-		if(abs(rx - median.x) > 4000 || abs(ry - median.y) > 4000) {
+		for(int i = 0; i < lastCount; i++) {
+			lastValuesSorted[i] = lastValues[i];
+		}
+		std::sort(lastValuesSorted, lastValuesSorted + lastCount, comparator);
+
+
+
+
+		const int maxDiff = 3000;
+		Vector<int> &median = lastValuesSorted[lastCount / 2];
+		if(abs(rx - median.x) > maxDiff || abs(ry - median.y) > maxDiff) {
 			return false;
 		}
 
@@ -97,7 +108,6 @@ private:
 	bool reverseX, reverseY;
 	bool swapXY;
 
-	int lastPos = 0;
 	Vector<int> lastValues[lastCount];
 
 	double map(int val, int min, int max) {

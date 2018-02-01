@@ -105,11 +105,11 @@ void control() {
 	double USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
 	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
-	if(i % 4 == 0) {
-		printf("FXOS8700Q ACC: X=%1.4f Y=%1.4f Z=%1.4f DX=%f DY=%f dir(%1.4f, %1.4f)\r\n", x, y, z, USX, USY, dir.x, dir.y);
+	//if(i % 4 == 0) {
+	//	printf("FXOS8700Q ACC: X=%1.4f Y=%1.4f Z=%1.4f DX=%f DY=%f dir(%1.4f, %1.4f)\r\n", x, y, z, USX, USY, dir.x, dir.y);
 		servoX.write(USX);
 		servoY.write(USY);
-	}
+	//}
 	i++;
 
 	lastX = x;

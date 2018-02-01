@@ -31,12 +31,13 @@ private:
 
 		std::sort(measures, measures + MEASURES);
 
-		int sum = 0;
-		for(int i = MEASURES / 4; i < 3 * MEASURES / 4; i++) {
-			sum += measures[i];
-		}
+		//int sum = 0;
+	//	for(int i = MEASURES / 4; i < 3 * MEASURES / 4; i++) {
+//			sum += measures[i];
+		//}
 
-		return sum / (MEASURES / 2);
+		//return sum / (MEASURES / 2);
+		return measures[MEASURES / 2];
 	}
 
 	int readY() {

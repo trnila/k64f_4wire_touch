@@ -124,8 +124,11 @@ parser.add_argument('--stdin', default=False, action='store_true')
 
 args = parser.parse_args()
 
+input = sys.stdin
+if not args.stdin:
+    input = Serial('/dev/ttyACM0', 115200)
+    input.reset_input_buffer()
 
-input = sys.stdin if args.stdin else Serial('/dev/ttyACM0', 115200)
 
 mode = modes[args.mode]()
 touch = Touch(input)

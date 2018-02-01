@@ -2,6 +2,7 @@
 #include <mbed_events.h>
 #include "Accelerometer.h"
 #include "Touch.h"
+#include "TouchPanel.h"
 #include "config.h"
 
 #define us2dc(t, us) ((double) (us) / ((t)*1000))
@@ -57,15 +58,6 @@ void control() {
 	lastPoints[lastPoint].y = y;
 	lastPoint = lastPoint % pointCount;
 
-	Point dir;
-	for(int i = 0; i < pointCount; i++) {
-		dir.x += lastPoints[i].x;
-		dir.y += lastPoints[i].y;
-	}
-	dir = normalize(dir);
-	x = dir.x;
-	y = dir.y;
-
 	double zx = -x * MX / z;
 	double zy = -y * MY / z;
 
@@ -99,7 +91,7 @@ int main() {
 	for(;;);
 #endif
 
-	panel.setPressureThreshold(100000);
+	panel.setPressureThreshold(120000);
 	panel.calibrateX(12200, 40700, true);
 	panel.calibrateY(8600, 48900, true);
 	panel.setSwapXY(true);

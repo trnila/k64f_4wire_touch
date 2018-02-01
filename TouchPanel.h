@@ -35,7 +35,7 @@ public:
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
 		int rx, ry;
 		touch.read(rx, ry, pressure);
-		if(rx > 60000 || ry > 60000) {
+		if(pressure > 120000 || rx>65000 || ry>65000) {
 			return false;
 		}
 

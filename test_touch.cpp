@@ -1,3 +1,4 @@
+#ifdef _TEST
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,17 +20,9 @@ private:
 
 #include "TouchPanel.h"
 
-struct Vector {
-	double x;
-	double y;
-};
-
 int main() {
 	Touch touch(stdin);
 	TouchPanel panel(touch);
-
-
-	Vector prev
 
 	double X, Y;
 	int RX, RY, pressure;
@@ -40,3 +33,5 @@ int main() {
 		fflush(stdout);
 	}
 }
+
+#endif

@@ -9,10 +9,15 @@
 // configurable
 #define INPUT_METHOD INPUT_METHOD_TOUCH
 
+// Pin configuration
+// touch
 const PinName PIN_YM = A0;
 const PinName PIN_XM = A1;
 const PinName PIN_YP = A2;
 const PinName PIN_XP = A3;
+// motors
+const PinName PIN_SERVOX = PTC10;
+const PinName PIN_SERVOY = PTC11;
 
 const int MX = 90, MY = 90;
 const int PX = 30, PY = 30;

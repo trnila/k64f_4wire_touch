@@ -10,7 +10,7 @@
 Serial pc(USBTX, USBRX);
 Touch touch(PIN_XP, PIN_XM, PIN_YP, PIN_YM);
 TouchPanel panel(touch);
-PwmOut servoX(PTC10), servoY(PTC11);
+PwmOut servoX(PIN_SERVOX), servoY(PIN_SERVOY);
 
 DigitalOut led1(LED1);
 

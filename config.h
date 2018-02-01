@@ -4,7 +4,7 @@
 #define INPUT_METHOD_ACCELEROMETER 1
 
 //#define FUNCTION_CENTER
-//#define FUNCTION_CALIBRATE
+#define FUNCTION_CALIBRATE
 
 // configurable
 #define INPUT_METHOD INPUT_METHOD_TOUCH
@@ -21,5 +21,6 @@ const int CENTER_X_US = 1600;
 const int CENTER_Y_US = 1550;
 const double SHIFT_MIN_US = -250;
 const double SHIFT_MAX_US = 250;
+const double SHIFT_MM = 12;
 
 const int MEASUREMENT_PERIOD_MS = DUTY_MS;

@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from serial import Serial
 from turtle import Turtle, setworldcoordinates
@@ -16,8 +17,8 @@ def setup_turtle():
 
 
 class Touch:
-    def __init__(self):
-        self.s = Serial('/dev/ttyACM0', 115200)
+    def __init__(self, s):
+        self.s = s
 
     def get_touch(self):
         while True:
@@ -26,11 +27,18 @@ class Touch:
                 def pair(p):
                     return p[0], int(p[1])
 
-                result = dict([pair(i.split('=', 2)) for i in self.s.readline().decode('utf-8').strip().split(' ')])
+                result = dict([pair(i.split('=', 2)) for i in self._readline().strip().split(' ')])
                 if all([k in result for k in ['X', 'Y', 'RX', 'RY', 'pressure', 'pressed']]):
                     return result
             except Exception as e:
                 print(e)
+
+    def _readline(self):
+        line = self.s.readline()
+        if not isinstance(line, str):
+            line = line.decode('utf-8')
+
+        return line
 
 
 class Calibrator:
@@ -112,10 +120,13 @@ modes = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument('mode', choices=modes.keys())
+parser.add_argument('--stdin', default=False, action='store_true')
 
 args = parser.parse_args()
 
 
+input = sys.stdin if args.stdin else Serial('/dev/ttyACM0', 115200)
+
 mode = modes[args.mode]()
-touch = Touch()
+touch = Touch(input)
 mode.run(touch)

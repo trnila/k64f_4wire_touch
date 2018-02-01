@@ -115,8 +115,8 @@ int main() {
 #endif
 
 	panel.setPressureThreshold(120000);
-	panel.calibrateX(12200, 40700, true);
-	panel.calibrateY(8600, 48900, true);
+	panel.calibrateX(8800, 49600, true);
+	panel.calibrateY(13000, 42568, true);
 	panel.setSwapXY(true);
 
 	center();

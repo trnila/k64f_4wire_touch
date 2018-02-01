@@ -55,8 +55,6 @@ void control() {
 
 	if(!input.getPos(x, y)) {
 		led1 = false;
-		//servoX.write(0);
-		//servoY.write(0);
 		return;
 	}
 	led1 = true;
@@ -120,6 +118,8 @@ int main() {
 	panel.calibrateX(12200, 40700, true);
 	panel.calibrateY(8600, 48900, true);
 	panel.setSwapXY(true);
+
+	center();
 
 #ifdef FUNCTION_CALIBRATE
 	double X, Y;

@@ -10,6 +10,7 @@ struct Vector {
 };
 
 typedef Vector<double> Vectorf;
+typedef Vector<int> Vectori;
 
 template<typename T>
 bool vectorComparator(const Vector<T> &a, const Vector<T> &b) {

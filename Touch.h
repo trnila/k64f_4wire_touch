@@ -4,7 +4,12 @@
 
 #define MEASURES 10
 
-class Touch {
+class ITouch {
+public:
+	virtual void read(int &X, int &Y, int &pressure) = 0;
+};
+
+class Touch: public ITouch {
 public:
 	Touch(PinName pinXP, PinName pinXM, PinName pinYP, PinName pinYM):
 		pinXP(pinXP),
@@ -12,7 +17,7 @@ public:
 		pinYP(pinYP),
 		pinYM(pinYM) {}
 
-	void read(int &X, int &Y, int &pressure) {
+	virtual void read(int &X, int &Y, int &pressure) {
 		Y = readY();
 		X = readX();
 		pressure = readPressure();

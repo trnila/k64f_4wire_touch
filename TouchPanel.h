@@ -1,26 +1,6 @@
 #include <algorithm>
+#include "Utils.h"
 
-template<typename T>
-struct Vector {
-	T x;
-	T y;
-};
-
-bool comparator(const Vector<int> &a, const Vector<int> &b) {
-	if(a.x < b.x) {
-		return true;
-	}
-
-	if(a.x == b.x) {
-		return a.y < b.y;
-	}
-
-	return false;
-}
-
-const int lastCount = 20;
-int lastPos = 0;
-Vector<int> lastValuesSorted[lastCount];
 class TouchPanel {
 public:
 	TouchPanel(Touch &touch):
@@ -35,33 +15,7 @@ public:
 	}
 
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
-		int rx, ry;
-		touch.read(rx, ry, pressure);
-		//if(pressure > 120000 || rx > 65000 || ry > 65000) {
-		//	return false;
-		//}
-
-		lastValues[lastPos].x = rx;
-		lastValues[lastPos].y = ry;
-		lastPos = (lastPos + 1) % lastCount;
-
-		for(int i = 0; i < lastCount; i++) {
-			lastValuesSorted[i] = lastValues[i];
-		}
-		std::sort(lastValuesSorted, lastValuesSorted + lastCount, comparator);
-
-
-
-
-		const int maxDiff = 3000;
-		Vector<int> &median = lastValuesSorted[lastCount / 2];
-		if(abs(rx - median.x) > maxDiff || abs(ry - median.y) > maxDiff) {
-			return false;
-		}
-
-
-		RX = rx;
-		RY = ry;
+		touch.read(RX, RY, pressure);
 
 		X = map(RX, minX, maxX);
 		if(reverseX) {
@@ -107,8 +61,6 @@ private:
 	int minY, maxY;
 	bool reverseX, reverseY;
 	bool swapXY;
-
-	Vector<int> lastValues[lastCount];
 
 	double map(int val, int min, int max) {
 		return ((double) val - min) / (max - min) * 2 - 1;

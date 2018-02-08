@@ -1,64 +1,47 @@
 #include <mbed.h>
 #include <mbed_events.h>
-#include "Accelerometer.h"
 #include "Touch.h"
 #include "TouchPanel.h"
 #include "config.h"
+#include "commands.h"
+#include "demo.h"
 
 #define us2dc(t, us) ((double) (us) / ((t)*1000))
 
+Configuration conf;
+
 Serial pc(USBTX, USBRX);
-Touch touch(PIN_XP, PIN_XM, PIN_YP, PIN_YM);
+Touch touch(MBED_CONF_APP_PIN_XP, MBED_CONF_APP_PIN_XM, MBED_CONF_APP_PIN_YP, MBED_CONF_APP_PIN_YM);
 TouchPanel panel(touch);
-PwmOut servoX(PIN_SERVOX), servoY(PIN_SERVOY);
-InterruptIn centerBtn(SW2);
-InterruptIn rectBtn(SW3);
+PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
+InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
+InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
 
-bool demo = false;
-
-DigitalOut led1(LED1);
-
-struct Point {
-	float x;
-	float y;
-	Point(float x, float y): x(x), y(y) {}
-	Point(): Point(0, 0) {}
-};
 
 const int pointCount = 10;
 int lastPoint = 0;
-Point lastPoints[pointCount];
+Vectorf lastPoints[pointCount];
 
 double lastX = 0, lastY = 0;
-Point dir;
+Vectorf dir;
 int i = 0;
 
-Point positions[] = {
-		Point(1, 1),
-		Point(-1, 1),
-		Point(-1, -1),
-		Point(1, -1)
+Vectorf positions[] = {
+		Vectorf(1, 1),
+		Vectorf(-1, 1),
+		Vectorf(-1, -1),
+		Vectorf(1, -1)
 };
 int currentPosition = 0;
-
-//Samples<Point, comparator> points;
-
 
 #if INPUT_METHOD == INPUT_METHOD_TOUCH
 	TouchPanel &input = panel;
 #elif INPUT_METHOD == INPUT_METHOD_ACCELEROMETER
+	#include "Accelerometer.h"
 	AccelerometerInput input;
 #else
 	#error "wrong input method"
 #endif
-
-Point normalize(const Point &point) {
-	double normalized = sqrt(point.x * point.x + point.y * point.y);
-	Point p;
-	p.x = point.x / normalized;
-	p.y = point.y / normalized;
-	return p;
-}
 
 double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
@@ -67,29 +50,20 @@ double cap(double val) {
 void control() {
 	double x, y, z = 1;
 
-	if(!demo) {
-		if(!input.getPos(x, y)) {
-			led1 = false;
-			return;
-		}
-		led1 = true;
-	} else {
-		x = positions[currentPosition].x;
-		y = positions[currentPosition].y;
+	if(conf.state == STATE_BALANCE) {
+		input.getPos(x, y);
+	} else if(conf.state == STATE_DEMO && !conf.positions.empty()) {
+		Vectorf v = conf.positions.current();
+
+		x = v.x;
+		y = v.y;
 
 		if(i % 50 == 0) {
-			currentPosition = (currentPosition + 1) % (sizeof(positions) / sizeof(*positions));
+			conf.positions.next();
 		}
+	} else {
+		return;
 	}
-
-	//dir.x -= lastX - x;
-	//dir.y -= lastY - y;
-	//dir = normalize(dir);
-
-
-	//lastPoints[lastPoint].x = x;
-	//lastPoints[lastPoint].y = y;
-	//lastPoint = lastPoint % pointCount;
 
 	double zx = -x * MX / z;
 	double zy = -y * MY / z;
@@ -119,19 +93,21 @@ void control() {
 void center() {
 	servoX.write(us2dc(DUTY_MS, CENTER_X_US));
 	servoY.write(us2dc(DUTY_MS, CENTER_Y_US));
-	demo = false;
+	conf.state = STATE_STOP;
 }
 
 void rect() {
-	demo = true;
+	conf.state = STATE_DEMO;
 	currentPosition = 0;
 }
 
-int main() {
- 	led1 = true;
 
+int main() {
 	pc.baud(115200);
-	pc.printf("Hello World!\r\n");
+	pc.printf("Initialized\n");
+
+	CommandsProcessor cmds(pc, conf);
+	cmds.start();
 
 	centerBtn.fall(&center);
 	rectBtn.fall(&rect);

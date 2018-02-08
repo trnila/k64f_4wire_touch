@@ -1,0 +1,41 @@
+{
+	"config": {
+		"PIN_SERVOX": null,
+		"PIN_SERVOY": null,
+
+		"PIN_YM": null,
+		"PIN_XM": null,
+		"PIN_YP": null,
+		"PIN_XP": null,
+
+		"PIN_BTN_CENTER": null,
+		"PIN_BTN_DEMO": null
+	},
+	"target_overrides": {
+		"K64F": {
+			"target.features_remove": ["LWIP", "STORAGE"],
+			"PIN_SERVOX": "PTC10",
+			"PIN_SERVOY": "PTC11",
+
+			"PIN_YM": "A0",
+			"PIN_XM": "A1",
+			"PIN_YP": "A2",
+			"PIN_XP": "A3",
+
+			"PIN_BTN_CENTER": "SW2",
+			"PIN_BTN_DEMO": "SW3"
+		},
+		"BLUEPILL_F103C8": {
+			"PIN_SERVOX": "A0",
+			"PIN_SERVOY": "A0",
+
+			"PIN_YM": "A0",
+			"PIN_XM": "A1",
+			"PIN_YP": "A2",
+			"PIN_XP": "A3",
+
+			"PIN_BTN_CENTER": "A0",
+			"PIN_BTN_DEMO": "A0"
+		}
+	}
+}

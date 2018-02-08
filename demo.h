@@ -13,6 +13,10 @@ public:
 		pos = 0;
 	}
 
+	void reset() {
+		pos = 0;
+	}
+
 	void add(Vectorf point) {
 		positions.push_back(point);
 	}

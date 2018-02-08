@@ -17,23 +17,6 @@ PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
 InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
 InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
 
-
-const int pointCount = 10;
-int lastPoint = 0;
-Vectorf lastPoints[pointCount];
-
-double lastX = 0, lastY = 0;
-Vectorf dir;
-int i = 0;
-
-Vectorf positions[] = {
-		Vectorf(1, 1),
-		Vectorf(-1, 1),
-		Vectorf(-1, -1),
-		Vectorf(1, -1)
-};
-int currentPosition = 0;
-
 #if INPUT_METHOD == INPUT_METHOD_TOUCH
 	TouchPanel &input = panel;
 #elif INPUT_METHOD == INPUT_METHOD_ACCELEROMETER
@@ -43,15 +26,20 @@ int currentPosition = 0;
 	#error "wrong input method"
 #endif
 
+double lastX = 0, lastY = 0;
+Vectorf dir;
+int i = 0;
+
 double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
 }
 
 void control() {
 	double x, y, z = 1;
+	int RX, RY, pressure;
 
 	if(conf.state == STATE_BALANCE) {
-		input.getPos(x, y);
+		input.getPosRaw(x, y, RX, RY, pressure);
 	} else if(conf.state == STATE_DEMO && !conf.positions.empty()) {
 		Vectorf v = conf.positions.current();
 
@@ -80,7 +68,7 @@ void control() {
 	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
 	//if(i % 4 == 0) {
-	//	printf("FXOS8700Q ACC: X=%1.4f Y=%1.4f Z=%1.4f DX=%f DY=%f dir(%1.4f, %1.4f)\r\n", x, y, z, USX, USY, dir.x, dir.y);
+		printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n");
 		servoX.write(USX);
 		servoY.write(USY);
 	//}
@@ -98,7 +86,7 @@ void center() {
 
 void rect() {
 	conf.state = STATE_DEMO;
-	currentPosition = 0;
+	conf.positions.reset();
 }
 
 

@@ -61,6 +61,8 @@ private:
 			conf.const_p = atof(argv[0]);
 		} else if(strcmp(cmd, "set_k") && argc >= 1) {
 			conf.const_k = atof(argv[0]);
+		} else if(strcmp(cmd, "enable_servos") && argc >= 1) {
+			conf.enabledServos = atoi(argv[0]);
 		} else {
 			//printf("Unknown cmd\n");
 		}

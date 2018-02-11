@@ -68,12 +68,12 @@ void control() {
 	double USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
 	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
-	//if(i % 4 == 0) {
-		pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n", RX, RY, USX, USY);
-//		servoX.write(USX);
-//		servoY.write(USY);
-	//}
-	i++;
+	pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n", RX, RY, USX, USY);
+
+	if(conf.enabledServos) {
+		servoX.write(USX);
+		servoY.write(USY);
+	}
 
 	lastX = x;
 	lastY = y;
@@ -95,8 +95,8 @@ int main() {
 	pc.baud(115200);
 	pc.printf("Initialized\n");
 
-	//CommandsProcessor cmds(pc, conf);
-	//cmds.start();
+	CommandsProcessor cmds(pc, conf);
+	cmds.start();
 
 	centerBtn.fall(&center);
 	rectBtn.fall(&rect);
@@ -104,20 +104,12 @@ int main() {
 	servoX.period(DUTY_MS / 1000.0);
 	servoY.period(DUTY_MS / 1000.0);
 
-#ifdef FUNCTION_CENTER
-	center();
-	for(;;);
-#endif
-
 	panel.setPressureThreshold(120000);
 	panel.calibrateX(8800, 49600, true);
 	panel.calibrateY(13000, 42568, true);
 	panel.setSwapXY(true);
 
-	//center();
-
 	EventQueue queue;
-
 	queue.call_every(MEASUREMENT_PERIOD_MS, control);
 	queue.dispatch();
 }

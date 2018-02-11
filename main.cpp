@@ -12,8 +12,8 @@ Configuration conf;
 
 Serial pc(USBTX, USBRX);
 Touch touch(MBED_CONF_APP_PIN_XP, MBED_CONF_APP_PIN_XM, MBED_CONF_APP_PIN_YP, MBED_CONF_APP_PIN_YM);
-Filter filter(&touch);
-TouchPanel panel(&filter);
+//Filter filter(&touch);
+TouchPanel panel(touch);
 PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
 InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
 InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
@@ -37,7 +37,7 @@ double cap(double val) {
 
 void control() {
 	double x, y, z = 1;
-	int RX, RY, pressure;
+	int RX = -1, RY = -1, pressure = -1;
 
 	if(conf.state == STATE_BALANCE) {
 		input.getPosRaw(x, y, RX, RY, pressure);
@@ -69,9 +69,9 @@ void control() {
 	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
 	//if(i % 4 == 0) {
-		printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n");
-		servoX.write(USX);
-		servoY.write(USY);
+		pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n", RX, RY, USX, USY);
+//		servoX.write(USX);
+//		servoY.write(USY);
 	//}
 	i++;
 
@@ -95,8 +95,8 @@ int main() {
 	pc.baud(115200);
 	pc.printf("Initialized\n");
 
-	CommandsProcessor cmds(pc, conf);
-	cmds.start();
+	//CommandsProcessor cmds(pc, conf);
+	//cmds.start();
 
 	centerBtn.fall(&center);
 	rectBtn.fall(&rect);
@@ -114,18 +114,18 @@ int main() {
 	panel.calibrateY(13000, 42568, true);
 	panel.setSwapXY(true);
 
-	center();
+	//center();
 
-#ifdef FUNCTION_CALIBRATE
+//#ifdef FUNCTION_CALIBRATE
 	double X, Y;
 	int RX, RY, pressure;
 	bool pressed;
 	while (true) {
 		pressed = panel.getPosRaw(X, Y, RX, RY, pressure);
-		pc.printf("X=0 Y=0 RX=%d RY=%d pressure=%d pressed=%d\r\n", RX, RY, pressure, pressed);
-		wait(0.02f);
+		pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n", RX, RY, 0, 0);
+		wait(0.05f);
 	}
-#endif
+//#endif
 
 	EventQueue queue;
 

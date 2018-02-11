@@ -3,14 +3,12 @@
 #define INPUT_METHOD_TOUCH 0
 #define INPUT_METHOD_ACCELEROMETER 1
 
-#define FUNCTION_CENTER 100
-#define FUNCTION_CALIBRATE 101
+//#define FUNCTION_CENTER 100
+//#define FUNCTION_CALIBRATE 101
 
 
 // configurable
 #define INPUT_METHOD INPUT_METHOD_TOUCH
-#define DISABLE_SERVOS 1
-#define DISABLE_BUTTONS 1
 
 const int MX = 90, MY = 90;
 const int PX = 30, PY = 30;

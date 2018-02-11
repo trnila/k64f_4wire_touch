@@ -10,6 +10,7 @@ enum State {
 struct Configuration {
 	State state;
 	DemoPositions positions;
+	double const_k, const_p;
 
 	Configuration() {
 		state = STATE_BALANCE;

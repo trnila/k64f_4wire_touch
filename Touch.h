@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #define MEASURES 10
+uint16_t measures[MEASURES];
 
 class ITouch {
 public:
@@ -20,29 +21,26 @@ public:
 	virtual void read(int &X, int &Y, int &pressure) {
 		Y = readY();
 		X = readX();
-		pressure = readPressure();
+		//pressure = readPressure();
 	}
 
 private:
 	PinName pinXP, pinXM;
 	PinName pinYP, pinYM;
 
-	uint16_t measure(AnalogIn in) {
-		uint16_t measures[MEASURES];
-
+	uint16_t measure(AnalogIn &in) {
 		for(int i = 0; i < MEASURES; i++) {
 			measures[i] = in.read_u16();
 		}
 
 		std::sort(measures, measures + MEASURES);
 
-		//int sum = 0;
-	//	for(int i = MEASURES / 4; i < 3 * MEASURES / 4; i++) {
-//			sum += measures[i];
-		//}
+		int sum = 0;
+		for(int i = MEASURES / 4; i < 3 * MEASURES / 4; i++) {
+			sum += measures[i];
+		}
 
-		//return sum / (MEASURES / 2);
-		return measures[MEASURES / 2];
+		return sum / (MEASURES / 2);
 	}
 
 	int readY() {

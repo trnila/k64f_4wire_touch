@@ -1,15 +1,15 @@
 #pragma once
 #include "configuration.h"
 
-
-char buffer[128];
+char buffer[16];
+int bufPos = 0;
 
 class CommandsProcessor {
 public:
 	CommandsProcessor(Serial &serial, Configuration &conf): serial(serial), conf(conf) {}
 
 	void start() {
-		serial.read((uint8_t*) buffer, sizeof(buffer), callback(this, &CommandsProcessor::process), SERIAL_EVENT_RX_COMPLETE, '\n');
+		serial.read((uint8_t*) buffer + bufPos, 1, callback(this, &CommandsProcessor::process));
 	}
 
 private:
@@ -17,19 +17,23 @@ private:
 	Configuration &conf;
 
 	void process(int flags) {
-		char* end = (char*) memchr(buffer, '\n', sizeof(buffer));
-		char* args[MAX_CMD_ARGS];
-		if(end) {
-			*end = '\0';
+		if(buffer[bufPos] == '\n' || buffer[bufPos] == '\r') {
+			buffer[bufPos] = '\0';
+			char* args[MAX_CMD_ARGS];
+
 			char *tok = strtok(buffer, " ");
 			char *cmd = tok;
 
 			int i = 0;
 			while(tok && i < MAX_CMD_ARGS) {
 				args[i] = tok = strtok(NULL, " ");
+				i++;
 			}
 
-			run(cmd, i, args);
+			run(cmd, i - 1, args);
+			bufPos = 0;
+		} else {
+			bufPos = (bufPos + 1) % sizeof(buffer);
 		}
 
 		start();
@@ -44,7 +48,7 @@ private:
 			} else if(strcmp(argv[0], "demo") == 0) {
 				conf.state = STATE_DEMO;
 			} else {
-				printf("Unknown mode\n");
+				//printf("Unknown mode\n");
 			}
 		} else if(strcmp(cmd, "demo_clear") == 0) {
 			conf.positions.clear();
@@ -53,8 +57,12 @@ private:
 			v.x = atof(argv[0]);
 			v.y = atof(argv[1]);
 			conf.positions.add(v);
+		} else if(strcmp(cmd, "set_p") && argc >= 1) {
+			conf.const_p = atof(argv[0]);
+		} else if(strcmp(cmd, "set_k") && argc >= 1) {
+			conf.const_k = atof(argv[0]);
 		} else {
-			printf("Unknown cmd\n");
+			//printf("Unknown cmd\n");
 		}
 	}
 };

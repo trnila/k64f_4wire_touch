@@ -46,7 +46,7 @@ private:
 
 class TouchPanel {
 public:
-	TouchPanel(ITouch *touch):
+	TouchPanel(Touch &touch):
 			touch(touch),
 			reverseX(false),
 			reverseY(false),
@@ -58,7 +58,7 @@ public:
 	}
 
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
-		touch->read(RX, RY, pressure);
+		touch.read(RX, RY, pressure);
 
 		X = map(RX, minX, maxX);
 		if(reverseX) {
@@ -98,7 +98,7 @@ public:
 	}
 
 private:
-	ITouch *touch;
+	Touch &touch;
 	int thresholdPressure;
 	int minX, maxX;
 	int minY, maxY;

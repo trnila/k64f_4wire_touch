@@ -12,8 +12,8 @@ Configuration conf;
 
 Serial pc(USBTX, USBRX);
 Touch touch(MBED_CONF_APP_PIN_XP, MBED_CONF_APP_PIN_XM, MBED_CONF_APP_PIN_YP, MBED_CONF_APP_PIN_YM);
-//Filter filter(&touch);
-TouchPanel panel(touch);
+Filter filter(&touch);
+TouchPanel panel(&filter);
 PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
 InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
 InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
@@ -115,17 +115,6 @@ int main() {
 	panel.setSwapXY(true);
 
 	//center();
-
-//#ifdef FUNCTION_CALIBRATE
-	double X, Y;
-	int RX, RY, pressure;
-	bool pressed;
-	while (true) {
-		pressed = panel.getPosRaw(X, Y, RX, RY, pressure);
-		pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n", RX, RY, 0, 0);
-		wait(0.05f);
-	}
-//#endif
 
 	EventQueue queue;
 

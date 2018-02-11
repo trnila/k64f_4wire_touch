@@ -3,15 +3,16 @@
 
 class Filter: public ITouch {
 public:
-	Filter(Touch *touch): fails(0), touch(touch) {}
+	Filter(ITouch *touch): fails(0), touch(touch) {}
 
 	void read(int &RX, int &RY, int &pressure) {
 		touch->read(RX, RY, pressure);
 
 		const int threshold = 60000;
+		const int threshold2 = 1000;
 		const int max_set = 65000;
 
-		if(RX > threshold) {
+		if(RX > threshold || RX < threshold2) {
 			RX = prevPos.x + prevSpeed.x;
 			fails++;
 
@@ -24,7 +25,7 @@ public:
 		prevSpeed.x = RX - prevPos.x;
 
 
-		if(RY > threshold) {
+		if(RY > threshold || RY < threshold2) {
 			RY = prevPos.y + prevSpeed.y;
 			fails++;
 
@@ -41,12 +42,12 @@ private:
 	Vector<int> prevPos;
 	Vector<int> prevSpeed;
 	int fails;
-	Touch *touch;
+	ITouch *touch;
 };
 
 class TouchPanel {
 public:
-	TouchPanel(Touch &touch):
+	TouchPanel(ITouch *touch):
 			touch(touch),
 			reverseX(false),
 			reverseY(false),
@@ -58,7 +59,7 @@ public:
 	}
 
 	bool getPosRaw(double &X, double &Y, int &RX, int &RY, int &pressure) {
-		touch.read(RX, RY, pressure);
+		touch->read(RX, RY, pressure);
 
 		X = map(RX, minX, maxX);
 		if(reverseX) {
@@ -98,7 +99,7 @@ public:
 	}
 
 private:
-	Touch &touch;
+	ITouch *touch;
 	int thresholdPressure;
 	int minX, maxX;
 	int minY, maxY;

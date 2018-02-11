@@ -12,21 +12,12 @@ Configuration conf;
 
 Serial pc(USBTX, USBRX);
 Touch touch(MBED_CONF_APP_PIN_XP, MBED_CONF_APP_PIN_XM, MBED_CONF_APP_PIN_YP, MBED_CONF_APP_PIN_YM);
-Filter filter(&touch);
-TouchPanel panel(&filter);
+//Filter filter(&touch);
+Filter2 filter(&touch);
 VelocityTracker tracker(&filter);
 PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
 InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
 InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
-
-#if INPUT_METHOD == INPUT_METHOD_TOUCH
-	TouchPanel &input = panel;
-#elif INPUT_METHOD == INPUT_METHOD_ACCELEROMETER
-	#include "Accelerometer.h"
-	AccelerometerInput input;
-#else
-	#error "wrong input method"
-#endif
 
 int i = 0;
 Vector<double> planeNormal;
@@ -111,11 +102,11 @@ int main() {
 	servoX.period(DUTY_MS / 1000.0);
 	servoY.period(DUTY_MS / 1000.0);
 
-	panel.setPressureThreshold(120000);
+	/*panel.setPressureThreshold(120000);
 	panel.calibrateX(8800, 49600, true);
 	panel.calibrateY(13000, 42568, true);
 	panel.setSwapXY(true);
-	panel.setSwapXY(true);
+	panel.setSwapXY(true);*/
 
 	EventQueue queue;
 	queue.call_every(MEASUREMENT_PERIOD_MS, control);

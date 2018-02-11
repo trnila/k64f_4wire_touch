@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Samples.h"
 #include "Utils.h"
 
 class Filter: public ITouch {
@@ -43,6 +44,34 @@ private:
 	Vector<int> prevSpeed;
 	int fails;
 	ITouch *touch;
+};
+
+class Filter2: public ITouch {
+public:
+	Filter2(ITouch *touch): touch(touch), samples(10) {}
+
+	void read(int &RX, int &RY, int &pressure) {
+		touch->read(RX, RY, pressure);
+
+		Vector<int> sample;
+		sample.x = RX;
+		sample.y = RY;
+		samples.add(sample);
+
+		int diffX, diffY;
+		diffX = abs(RX - samples.median().x);
+		diffY = abs(RY - samples.median().y);
+
+		const int threshold = 500;
+		if(diffX > threshold || diffY > threshold) {
+			RX = samples.median().x;
+			RY = samples.median().y;
+		}
+	}
+
+private:
+	ITouch *touch;
+	Samples< Vector<int> > samples;
 };
 
 class TouchPanel {

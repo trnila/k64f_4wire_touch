@@ -56,6 +56,11 @@ bool vectorComparator(const Vector<T> &a, const Vector<T> &b) {
 }
 
 template<typename T>
+bool operator<(Vector<T> a, Vector<T> b) {
+	return vectorComparator(a, b);
+}
+
+template<typename T>
 Vector<T> normalize(const Vector<T> &point) {
 	double normalized = sqrt(point.x * point.x + point.y * point.y);
 

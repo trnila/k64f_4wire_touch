@@ -23,6 +23,8 @@ public:
 			sorted[i] = samples[i];
 		}
 		std::sort(sorted, sorted + count);
+
+		return sorted[count / 2];
 	}
 
 	bool avg(T& val) {

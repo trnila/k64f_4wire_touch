@@ -14,6 +14,7 @@ Serial pc(USBTX, USBRX);
 Touch touch(MBED_CONF_APP_PIN_XP, MBED_CONF_APP_PIN_XM, MBED_CONF_APP_PIN_YP, MBED_CONF_APP_PIN_YM);
 Filter filter(&touch);
 TouchPanel panel(&filter);
+VelocityTracker tracker(&filter);
 PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
 InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
 InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
@@ -27,9 +28,8 @@ InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
 	#error "wrong input method"
 #endif
 
-double lastX = 0, lastY = 0;
-Vectorf dir;
 int i = 0;
+Vector<double> planeNormal;
 
 double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
@@ -37,10 +37,15 @@ double cap(double val) {
 
 void control() {
 	double x, y, z = 1;
-	int RX = -1, RY = -1, pressure = -1;
+
+	tracker.update();
 
 	if(conf.state == STATE_BALANCE) {
-		input.getPosRaw(x, y, RX, RY, pressure);
+		planeNormal = planeNormal - (conf.const_p * tracker.getSpeed() + conf.const_k * tracker.getAcceleration());
+		planeNormal = normalize(planeNormal);
+
+		x = planeNormal.x;
+		y = planeNormal.y;
 	} else if(conf.state == STATE_DEMO && !conf.positions.empty()) {
 		Vectorf v = conf.positions.current();
 
@@ -56,8 +61,6 @@ void control() {
 
 	double zx = -x * MX / z;
 	double zy = -y * MY / z;
-	//double zx = -dir.x * MX / z;
-	//double zy = -dir.y * MY / z;
 
 	double angleX = zx / MX;
 	double angleY = zy / MY;
@@ -68,15 +71,19 @@ void control() {
 	double USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
 	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
-	pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f\r\n", RX, RY, USX, USY);
+	pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f vx=%1.4f vy=%1.4f ax=%1.4f ay=%1.4f\r\n",
+			tracker.getResistance().x, tracker.getResistance().y,
+			USX, USY,
+			tracker.getSpeed().x, tracker.getSpeed().y,
+			tracker.getAcceleration().x, tracker.getAcceleration().y
+	);
 
 	if(conf.enabledServos) {
 		servoX.write(USX);
 		servoY.write(USY);
 	}
 
-	lastX = x;
-	lastY = y;
+	i++;
 }
 
 void center() {
@@ -107,6 +114,7 @@ int main() {
 	panel.setPressureThreshold(120000);
 	panel.calibrateX(8800, 49600, true);
 	panel.calibrateY(13000, 42568, true);
+	panel.setSwapXY(true);
 	panel.setSwapXY(true);
 
 	EventQueue queue;

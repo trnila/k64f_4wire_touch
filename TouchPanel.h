@@ -110,3 +110,41 @@ private:
 		return ((double) val - min) / (max - min) * 2 - 1;
 	}
 };
+
+class VelocityTracker {
+public:
+	VelocityTracker(ITouch *touch): touch(touch) {}
+	void update() {
+		int RX, RY, pressure;
+		touch->read(RX, RY, pressure);
+
+		prevResistance = curResistance;
+		curResistance.x = RX;
+		curResistance.y = RY;
+
+		prevSpeed = curSpeed;
+		curSpeed.x = curResistance.x - prevResistance.x;
+		curSpeed.y = curResistance.y - prevResistance.y;
+
+		acceleration.x = curSpeed.x - prevSpeed.x;
+		acceleration.y = curSpeed.y - prevSpeed.y;
+	}
+
+	const Vector<int>& getResistance() const {
+		return curResistance;
+	}
+
+	const Vector<double>& getSpeed() const {
+		return curSpeed;
+	}
+
+	const Vector<double>& getAcceleration() const {
+		return curSpeed;
+	}
+
+private:
+	ITouch *touch;
+	Vector<int> prevResistance, curResistance;
+	Vector<double> prevSpeed, curSpeed;
+	Vector<double> acceleration;
+};

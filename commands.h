@@ -1,7 +1,7 @@
 #pragma once
 #include "configuration.h"
 
-char buffer[16];
+char buffer[64];
 int bufPos = 0;
 
 class CommandsProcessor {
@@ -57,7 +57,7 @@ private:
 			v.x = atof(argv[0]);
 			v.y = atof(argv[1]);
 			conf.positions.add(v);
-		} else if(strcmp(cmd, "set_p")  == 0 && argc >= 1) {
+		} else if(strcmp(cmd, "set_p") == 0 && argc >= 1) {
 			conf.const_p = atof(argv[0]);
 		} else if(strcmp(cmd, "set_k")  == 0 && argc >= 1) {
 			conf.const_k = atof(argv[0]);
@@ -70,5 +70,6 @@ private:
 			conf.state = STATE_STOP;
 			conf.USY = atof(argv[0]);
 		}
+		cmd = NULL;
 	}
 };

@@ -155,6 +155,11 @@ public:
 		curSpeed.x = curResistance.x - prevResistance.x;
 		curSpeed.y = curResistance.y - prevResistance.y;
 
+		if(fabs(curSpeed.x) > 1000 || fabs(curSpeed.y) > 1000) {
+			curSpeed = prevSpeed;
+		}
+
+
 		acceleration.x = curSpeed.x - prevSpeed.x;
 		acceleration.y = curSpeed.y - prevSpeed.y;
 	}

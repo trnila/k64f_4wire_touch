@@ -54,7 +54,7 @@ void control() {
 		y = planeNormal.y;
 
 		double zx = -x * MX / z;
-		double zy = -y * MY / z;
+		double zy = y * MY / z;
 
 		double angleX = zx / MX;
 		double angleY = zy / MY;
@@ -113,6 +113,7 @@ void rect() {
 
 
 int main() {
+
 	servoX.period(DUTY_MS / 1000.0);
 	servoY.period(DUTY_MS / 1000.0);
 	centerServos();

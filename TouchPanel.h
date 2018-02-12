@@ -48,7 +48,7 @@ private:
 
 class Filter2: public ITouch {
 public:
-	Filter2(ITouch *touch): touch(touch), samples(10) {}
+	Filter2(ITouch *touch): touch(touch), samples(30) {}
 
 	void read(int &RX, int &RY, int &pressure) {
 		touch->read(RX, RY, pressure);

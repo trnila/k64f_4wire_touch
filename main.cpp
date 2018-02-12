@@ -20,14 +20,29 @@ InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
 InterruptIn rectBtn(MBED_CONF_APP_PIN_BTN_DEMO);
 
 int i = 0;
+int timeStopped = 0;
 Vector<double> planeNormal;
 
 double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
 }
 
+void writeServos(double USX, double USY) {
+	if(conf.enabledServos) {
+		servoX.write(USX);
+		servoY.write(USY);
+	}
+}
+
+void centerServos() {
+	conf.USX = us2dc(DUTY_MS, CENTER_X_US);
+	conf.USY = us2dc(DUTY_MS, CENTER_Y_US);
+	writeServos(conf.USX, conf.USY);
+}
+
 void control() {
 	double x, y, z = 1;
+	double USX = -1, USY = -1;
 
 	tracker.update();
 
@@ -37,6 +52,28 @@ void control() {
 
 		x = planeNormal.x;
 		y = planeNormal.y;
+
+		double zx = -x * MX / z;
+		double zy = -y * MY / z;
+
+		double angleX = zx / MX;
+		double angleY = zy / MY;
+
+		double DX = angleX * 1800 / M_PI;
+		double DY = angleY * 1800 / M_PI;
+
+		USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
+		USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
+
+		if(tracker.getResistance().x < 60000 || tracker.getResistance().y < 60000) {
+			writeServos(USX, USY);
+			timeStopped = 0;
+		} else {
+			timeStopped++;
+			if(timeStopped > 10) {
+				centerServos();
+			}
+		}
 	} else if(conf.state == STATE_DEMO && !conf.positions.empty()) {
 		Vectorf v = conf.positions.current();
 
@@ -47,20 +84,12 @@ void control() {
 			conf.positions.next();
 		}
 	} else {
-		return;
+		if(conf.state == STATE_STOP) {
+			writeServos(conf.USX, conf.USY);
+			USX = conf.USX;
+			USY = conf.USY;
+		}
 	}
-
-	double zx = -x * MX / z;
-	double zy = -y * MY / z;
-
-	double angleX = zx / MX;
-	double angleY = zy / MY;
-
-	double DX = angleX * 1800 / M_PI;
-	double DY = angleY * 1800 / M_PI;
-
-	double USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
-	double USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
 
 	pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f vx=%1.4f vy=%1.4f ax=%1.4f ay=%1.4f\r\n",
 			tracker.getResistance().x, tracker.getResistance().y,
@@ -69,17 +98,11 @@ void control() {
 			tracker.getAcceleration().x, tracker.getAcceleration().y
 	);
 
-	if(conf.enabledServos) {
-		servoX.write(USX);
-		servoY.write(USY);
-	}
-
 	i++;
 }
 
 void center() {
-	servoX.write(us2dc(DUTY_MS, CENTER_X_US));
-	servoY.write(us2dc(DUTY_MS, CENTER_Y_US));
+	centerServos();
 	conf.state = STATE_STOP;
 }
 
@@ -90,6 +113,10 @@ void rect() {
 
 
 int main() {
+	servoX.period(DUTY_MS / 1000.0);
+	servoY.period(DUTY_MS / 1000.0);
+	centerServos();
+
 	pc.baud(115200);
 	pc.printf("Initialized\n");
 
@@ -98,9 +125,6 @@ int main() {
 
 	centerBtn.fall(&center);
 	rectBtn.fall(&rect);
-
-	servoX.period(DUTY_MS / 1000.0);
-	servoY.period(DUTY_MS / 1000.0);
 
 	/*panel.setPressureThreshold(120000);
 	panel.calibrateX(8800, 49600, true);

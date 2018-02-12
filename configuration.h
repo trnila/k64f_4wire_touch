@@ -12,6 +12,7 @@ struct Configuration {
 	DemoPositions positions;
 	double const_k, const_p;
 	bool enabledServos;
+	double USX, USY;
 
 	Configuration() {
 		state = STATE_BALANCE;

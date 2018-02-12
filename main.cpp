@@ -12,8 +12,8 @@ Configuration conf;
 
 Serial pc(USBTX, USBRX);
 Touch touch(MBED_CONF_APP_PIN_XP, MBED_CONF_APP_PIN_XM, MBED_CONF_APP_PIN_YP, MBED_CONF_APP_PIN_YM);
-//Filter filter(&touch);
-Filter2 filter(&touch);
+Filter filter(&touch);
+//Filter2 filter(&touch);
 VelocityTracker tracker(&filter);
 PwmOut servoX(MBED_CONF_APP_PIN_SERVOX), servoY(MBED_CONF_APP_PIN_SERVOY);
 InterruptIn centerBtn(MBED_CONF_APP_PIN_BTN_CENTER);
@@ -27,8 +27,8 @@ double cap(double val) {
 	return std::min(std::max(val, SHIFT_MIN_US), SHIFT_MAX_US);
 }
 
-void writeServos(double USX, double USY) {
-	if(conf.enabledServos) {
+void writeServos(double USX, double USY, bool force = false) {
+	if(conf.enabledServos || force) {
 		servoX.write(USX);
 		servoY.write(USY);
 	}
@@ -37,7 +37,7 @@ void writeServos(double USX, double USY) {
 void centerServos() {
 	conf.USX = us2dc(DUTY_MS, CENTER_X_US);
 	conf.USY = us2dc(DUTY_MS, CENTER_Y_US);
-	writeServos(conf.USX, conf.USY);
+	writeServos(conf.USX, conf.USY, true);
 }
 
 void control() {

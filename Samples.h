@@ -32,11 +32,18 @@ public:
 			return false;
 		}
 
-		val = 0;
+		val.x = 0;
 		for(int i = 0; i < count; i++) {
-			val += samples[i];
+			val.x += samples[i].x;
 		}
-		val /= count;
+		val.x /= count;
+
+		val.y = 0;
+		for(int i = 0; i < count; i++) {
+			val.y += samples[i].y;
+		}
+		val.y /= count;
+
 		return true;
 	}
 

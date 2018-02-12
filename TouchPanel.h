@@ -142,7 +142,7 @@ private:
 
 class VelocityTracker {
 public:
-	VelocityTracker(ITouch *touch): touch(touch) {}
+	VelocityTracker(ITouch *touch): touch(touch), avgSpeed(10) {}
 	void update() {
 		int RX, RY, pressure;
 		touch->read(RX, RY, pressure);
@@ -159,6 +159,10 @@ public:
 			curSpeed = prevSpeed;
 		}
 
+		avgSpeed.add(curSpeed);
+		avgSpeed.avg(avg);
+
+
 
 		acceleration.x = curSpeed.x - prevSpeed.x;
 		acceleration.y = curSpeed.y - prevSpeed.y;
@@ -169,7 +173,7 @@ public:
 	}
 
 	const Vector<double>& getSpeed() const {
-		return curSpeed;
+		return avg;
 	}
 
 	const Vector<double>& getAcceleration() const {
@@ -181,4 +185,6 @@ private:
 	Vector<int> prevResistance, curResistance;
 	Vector<double> prevSpeed, curSpeed;
 	Vector<double> acceleration;
+	Samples< Vector<double> > avgSpeed;
+	Vector<double> avg;
 };

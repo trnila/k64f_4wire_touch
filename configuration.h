@@ -17,7 +17,7 @@ struct Configuration {
 	Configuration() {
 		state = STATE_BALANCE;
 		enabledServos = true;
-		const_k = 0.0005;
-		const_p = 0;
+		const_p = 0.005;
+		const_k = 0;
 	}
 };

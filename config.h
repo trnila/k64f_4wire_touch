@@ -1,7 +1,7 @@
 #pragma once
 
-const int MX = 90, MY = 90;
-const int PX = 30, PY = 30;
+const int MX = 90, MY = 90; // montazni bod kloubu na ose x, y
+const int PX = 30, PY = 30; // delka paky na servu na ose x, y
 const int DUTY_MS = 20;
 const int CENTER_X_US = 1560;
 const int CENTER_Y_US = 1560;

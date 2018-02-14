@@ -56,11 +56,11 @@ void control() {
 		double zx = -x * MX / z;
 		double zy = y * MY / z;
 
-		double angleX = zx / MX;
-		double angleY = zy / MY;
+		double angleX = zx / PX;
+		double angleY = zy / PY;
 
-		double DX = angleX * 1800 / M_PI;
-		double DY = angleY * 1800 / M_PI;
+		double DX = 10 * angleX * 180 / M_PI; // 1 degree per 10 microseconds
+		double DY = 10 * angleY * 180/ M_PI;
 
 		USX = us2dc(DUTY_MS, CENTER_X_US + cap(DX));
 		USY = us2dc(DUTY_MS, CENTER_Y_US + cap(DY));
@@ -91,11 +91,12 @@ void control() {
 		}
 	}
 
-	pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f vx=%1.4f vy=%1.4f ax=%1.4f ay=%1.4f\r\n",
+	pc.printf("RX=%d RY=%d USX=%1.4f USY=%1.4f vx=%1.4f vy=%1.4f ax=%1.4f ay=%1.4f nx=%1.4f ny=%1.4f\r\n",
 			tracker.getResistance().x, tracker.getResistance().y,
 			USX, USY,
 			tracker.getSpeed().x, tracker.getSpeed().y,
-			tracker.getAcceleration().x, tracker.getAcceleration().y
+			tracker.getAcceleration().x, tracker.getAcceleration().y,
+			x, y
 	);
 
 	i++;
